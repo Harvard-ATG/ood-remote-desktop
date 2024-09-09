@@ -25,6 +25,7 @@ container_image=/shared/apptainerImages/<%= context.desktop %>.sif
 
 export SING_BINDS=""
 export SING_BINDS="$SING_BINDS -B /shared/courseSharedFolders"
+export SING_BINDS="$SING_BINDS -B /shared/spack"
 # export SING_BINDS="$SING_BINDS -B /etc/nsswitch.conf"
 # export SING_BINDS="$SING_BINDS -B /etc/sssd/"
 # export SING_BINDS="$SING_BINDS -B /var/lib/sss"
