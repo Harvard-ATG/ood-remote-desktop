@@ -1,18 +1,30 @@
 #!/bin/bash
 
+this_script="template/before.sh.erb"
+
+log() {
+    echo -e "[$(date -Iseconds)][${this_script}] $1"
+}
+
+# Validate home directory and set it to what it should be
+log "original HOME=$HOME"
+log "user=$(id -nu)"
+export HOME="/shared/home/$(id -nu)"
+log "new HOME=$HOME"
+
 export SING_OVERLAYS=""
 
 ## create custom desktop folder
 export DESKTOP_FOLDER="${PWD}/desktop"
 export XDG_DESKTOP_DIR=$DESKTOP_FOLDER
 mkdir -p $DESKTOP_FOLDER
-echo "TIMING: $(date -Iseconds) - set up desktop folder"
+log "Set up desktop folder"
 
 ## create the configuration folder
 export XDG_CONFIG_HOME=$PWD/config
 mkdir -p $XDG_CONFIG_HOME
 export XDG_CONFIG_DIRS=$XDG_CONFIG_HOME
-echo "TIMING: $(date -Iseconds) - set up config folder"
+log "Set up config folder"
 
 ## we set a separate desktop folder, but unique Documents , etc etc 
 cat > $XDG_CONFIG_DIRS/user-dirs.dirs  <<EOF
@@ -25,4 +37,4 @@ XDG_PUBLICSHARE_DIR="$HOME/Public"
 XDG_TEMPLATES_DIR="$HOME/Templates"
 XDG_VIDEOS_DIR="$HOME/Videos"
 EOF
-echo "TIMING: $(date -Iseconds) - set up user dirs folder"
+log "Set up user dirs folder"
