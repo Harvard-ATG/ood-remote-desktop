@@ -1,28 +1,4 @@
----
-title: Remote Desktop - Base
-cluster: "*"
-form:
-  - bc_num_hours
-  - bc_num_slots
-  - desktop
-  - custom_num_cores
-  - node_type
-  # VNC settings
-  - bc_vnc_idle
-  - bc_vnc_resolution
-  - bc_queue
-attributes:
-  desktop: "xfce"
-  bc_num_slots: null
-  custom_num_cores:
-    widget: "number_field"
-    label: "Number of CPUs"
-    value: 1
-    min: 1
-    max: 4
-    step: 1
-  bc_vnc_idle: 0
-  bc_vnc_resolution:
-    required: true
-  node_type: null
-  bc_queue: "desktop"
+# This OnDemand app configuration uses sub-apps by default to allow for custom
+# sub-apps. The default configuration is in `local/generic.yml.erb`, which is
+# the file that should be referenced for creating a new sub-app with this
+# configuration.

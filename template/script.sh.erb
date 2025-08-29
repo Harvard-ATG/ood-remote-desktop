@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-echo "TIMING: $(date -Iseconds) - Start script"
+this_script="template/script.sh.erb"
 
-# Validate home directory and set it to what it should be
-echo "original HOME=$HOME"
-echo "user=$(id -nu)"
-export HOME="/shared/home/$(id -nu)"
-echo "new HOME=$HOME"
+log() {
+    echo -e "[$(date -Iseconds)][${this_script}] $1"
+}
+
+log "Start script"
 
 # Change working directory to user's home directory
 cd "${HOME}"
@@ -15,32 +15,25 @@ cd "${HOME}"
 
 # Activate spack and enter apptainer environment
 . /shared/spack/share/spack/setup-env.sh
-echo "TIMING: $(date -Iseconds) - Loaded spack"
+log "Loaded spack"
 which spack
 spack env activate apptainer
-echo "TIMING: $(date -Iseconds) - Loaded environment"
+log "Loaded environment"
 
 # Set which container to use
 container_image=/shared/apptainerImages/<%= context.desktop %>.sif
 
-export SING_BINDS=""
-export SING_BINDS="$SING_BINDS -B /shared/courseSharedFolders"
-# export SING_BINDS="$SING_BINDS -B /etc/nsswitch.conf"
-# export SING_BINDS="$SING_BINDS -B /etc/sssd/"
-# export SING_BINDS="$SING_BINDS -B /var/lib/sss"
-# export SING_BINDS="$SING_BINDS -B /etc/slurm"
-# export SING_BINDS="$SING_BINDS -B /slurm"
-# export SING_BINDS="$SING_BINDS -B /var/run/munge"
-# export SING_BINDS="$SING_BINDS -B `which sbatch `"
-# export SING_BINDS="$SING_BINDS -B `which srun `"
-# export SING_BINDS="$SING_BINDS -B `which sacct `"
-# export SING_BINDS="$SING_BINDS -B `which scontrol `"
-# export SING_BINDS="$SING_BINDS -B /usr/lib64/slurm/"
-# export SING_BINDS="$SING_BINDS -B /usr/lib64/libmunge.so.2"
-# export SING_BINDS="$SING_BINDS -B /usr/lib64/libmunge.so.2.0.0"
+# Bind folders to the container file system so it can access and write to them
+SING_BIND_LIST=(
+  "-B" "/shared/courseSharedFolders"
+  "-B" "/shared/spack"
+  "-B" "$WORKING_DIR/etc/rstudio:/etc/rstudio"
+)
+SING_BINDS="${SING_BIND_LIST[@]}"
+log "SING_BINDS=${SING_BINDS}"
 
-echo "TIMING: $(date -Iseconds) - Launching desktop <%= context.desktop %>"
+log "Launching desktop <%= context.desktop %>"
 
 chmod +x "<%= session.staged_root.join("desktops", "#{context.desktop}.sh") %>"
 apptainer exec $SING_BINDS $container_image "<%= session.staged_root.join("desktops", "#{context.desktop}.sh") %>"
-echo "TIMING: $(date -Iseconds) - Desktop <%= context.desktop %> ended."
+log "Desktop <%= context.desktop %> ended."
