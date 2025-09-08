@@ -17,5 +17,6 @@ DEBIAN_FRONTEND=noninteractive apt install -y \
     locales \
     xfce4-terminal \
     vim \
-    language-pack-en-base
+    language-pack-en-base \
+    git
 dpkg-reconfigure locales
