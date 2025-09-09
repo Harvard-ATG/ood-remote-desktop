@@ -24,5 +24,5 @@ dpkg-reconfigure locales
 OVITO_FILE="ovito-basic-3.13.1-x86_64"
 
 curl -o /tmp/${OVITO_FILE}.tar.xz  https://www.ovito.org/download/master/${OVITO_FILE}.tar.xz
-tar -xzf /tmp/${OVITO_FILE}.tar.xz
+tar -xf /tmp/${OVITO_FILE}.tar.xz
 mv /tmp/${OVITO_FILE} /opt/${OVITO_FILE}
