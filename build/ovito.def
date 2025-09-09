@@ -1,0 +1,28 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%post
+apt update -y && \
+DEBIAN_FRONTEND=noninteractive apt install -y \
+    xfce4 \
+    dbus-x11 \
+    xdg-utils \
+    x11-utils \
+    curl \
+    build-essential \
+    libxtst6 \
+    libgl1-mesa-dev \
+    libglew-dev \
+    libosmesa6-dev \
+    libxcb-cursor-dev \
+    locales \
+    xfce4-terminal \
+    vim \
+    language-pack-en-base
+dpkg-reconfigure locales
+
+OVITO_FILE="ovito-basic-3.13.1-x86_64"
+
+curl -o /tmp/${OVITO_FILE}.tar.xz  https://www.ovito.org/download/master/${OVITO_FILE}.tar.xz
+tar -xzf /tmp/${OVITO_FILE}.tar.xz
+mv /tmp/${OVITO_FILE} /opt/${OVITO_FILE}
