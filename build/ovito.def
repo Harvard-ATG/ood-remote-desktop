@@ -19,7 +19,8 @@ DEBIAN_FRONTEND=noninteractive apt install -y \
     xfce4-terminal \
     vim \
     language-pack-en-base
-dpkg-reconfigure locales
+
+# dpkg-reconfigure locales
 
 /* -------------------------------------------------------------------------- */
 /*                            Ovito software setup                            */
