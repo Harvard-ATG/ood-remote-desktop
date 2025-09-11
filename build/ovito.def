@@ -35,7 +35,7 @@ mv /tmp/${OVITO_FILE} /opt
 
 # Install packages recommended by Ovito when encountering "Missing XCB system
 # libraries" error - https://docs.ovito.org/installation.html
-apt install \
+DEBIAN_FRONTEND=noninteractive apt install -y \
     libxcb1 \
     libx11-xcb1 \
     libxcb-glx0 \
