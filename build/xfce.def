@@ -16,7 +16,7 @@ DEBIAN_FRONTEND=noninteractive apt install -y \
     libosmesa6-dev \
     locales \
     xfce4-terminal \
-    # firefox \ # needs to be installed via snap
     vim \
-    language-pack-en-base
+    language-pack-en-base \
+    git
 dpkg-reconfigure locales

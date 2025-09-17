@@ -25,12 +25,12 @@ container_image=/shared/apptainerImages/<%= context.desktop %>.sif
 
 # Bind folders to the container file system so it can access and write to them
 SING_BIND_LIST=(
-  "-B" "/shared/courseSharedFolders"
-  "-B" "/shared/spack"
-  "-B" "$WORKING_DIR/etc/rstudio:/etc/rstudio"
+  "-B" "/shared"
 )
 SING_BINDS="${SING_BIND_LIST[@]}"
 log "SING_BINDS=${SING_BINDS}"
+
+unset DBUS_SESSION_BUS_ADDRESS
 
 log "Launching desktop <%= context.desktop %>"
 
