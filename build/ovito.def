@@ -1,0 +1,60 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%post
+set -x
+apt update -y && \
+DEBIAN_FRONTEND=noninteractive apt install -y \
+    xfce4 \
+    dbus-x11 \
+    xdg-utils \
+    x11-utils \
+    curl \
+    build-essential \
+    libxtst6 \
+    libgl1-mesa-dev \
+    libglew-dev \
+    libosmesa6-dev \
+    libxcb-cursor-dev \
+    locales \
+    xfce4-terminal \
+    vim \
+    language-pack-en-base
+
+# dpkg-reconfigure locales
+
+# /* ------------------------------------------------------------------------ */
+# /*                           OVITO SOFTWARE SETUP                           */
+# /* ------------------------------------------------------------------------ */
+
+OVITO_FILE="ovito-basic-3.13.1-x86_64"
+
+curl -o /tmp/${OVITO_FILE}.tar.xz  https://www.ovito.org/download/master/${OVITO_FILE}.tar.xz
+tar -xf /tmp/${OVITO_FILE}.tar.xz --directory /tmp
+mv /tmp/${OVITO_FILE} /opt
+
+# Install packages recommended by Ovito when encountering "Missing XCB system
+# libraries" error - https://docs.ovito.org/installation.html
+DEBIAN_FRONTEND=noninteractive apt install -y \
+    libxcb1 \
+    libx11-xcb1 \
+    libxcb-glx0 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-randr0 \
+    libxcb-render-util0 \
+    libxcb-render0 \
+    libxcb-shape0 \
+    libxcb-shm0 \
+    libxcb-sync1 \
+    libxcb-xfixes0 \
+    libxcb-xinerama0 \
+    libxcb-xinput0 \
+    libxcb-xkb1 \
+    libxcb-cursor0 \
+    libfontconfig1 \
+    libfreetype6 \
+    libopengl0 \
+    libglx0 \
+    libx11-6

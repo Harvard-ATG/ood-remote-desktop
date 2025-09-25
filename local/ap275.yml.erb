@@ -1,0 +1,76 @@
+<%-
+# Specify admin groups by the full name of the group in the production HKey environment.
+adminGroups = [
+  "ondemand-admins-1025174" # HUIT OOD admin group, prod environment
+]
+# Specify course groups by Canvas course ID, which you can find in a url:
+# canvas.harvard.edu/courses/000000
+enabledGroups = [
+  "155251"
+]
+
+def arrays_have_common_element(array1, array2)
+  # Use the `&` operator to get the intersection of the two arrays
+  # If the intersection is not empty, return true, otherwise false
+  !(array1 & array2).empty?
+end
+
+userGroups = OodSupport::User.new.groups.sort_by(&:id).map(&:name)
+# First check if the user is in an admin group
+if arrays_have_common_element(userGroups, adminGroups)
+  cluster="*"
+else
+  # If the user is not in an admin group, check if they're in an authorized Canvas group
+  userCanvasGroups = userGroups.flat_map{ |str| str.scan(/^canvas(\d+)-\d+/) }.flatten
+
+  # Check if the groups that the user is in match any of the courses that should
+  # have access to this app.
+
+  if arrays_have_common_element(userCanvasGroups, enabledGroups)
+    cluster="*"
+  else
+    cluster="disable_this_app"
+  end
+end
+-%>
+---
+title: Remote Desktop - APPHY 275
+cluster: "<%= cluster %>"
+
+# Form attributes that will be presented to the user and available to the 
+# scripts that launch the app. Think of this as initializing variables for use 
+# in the attributes section as needed.
+form:
+  - bc_num_hours
+  - desktop
+  - custom_num_cores
+  # VNC settings
+  - bc_vnc_idle
+  - bc_vnc_resolution
+  - bc_queue
+
+# Customize how form variables appear to users. This is also where you can set 
+# a static value for a variable, in which case it will not be visible to users.
+attributes:
+  # This determines which container and launch script will be used, although 
+  # currently only xfce is in use.
+  desktop: "ovito"
+
+  # How many CPU cores to include in the slurm job submission
+  custom_num_cores:
+    widget: "number_field"
+    label: "Number of CPUs"
+    value: 1
+    min: 1
+    max: 4
+    step: 1
+
+  # the idle timeout setting for the vncserver. 
+  bc_vnc_idle: 0
+
+  bc_vnc_resolution:
+    required: true
+
+  # Which queue to submit to. In this case, always use "desktop", which has a 
+  # custom start script to enable remote desktops.
+  bc_queue: "desktop"
