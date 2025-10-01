@@ -1,10 +1,12 @@
 #!/bin/bash
 
-this_script="template/desktops/xfce.sh"
+this_script="template/desktops/ovito.sh"
 
 log() {
     echo -e "[$(date -Iseconds)][${this_script}] $1"
 }
+
+export PATH=/opt/ovito-basic-3.13.1-x86_64/bin:$PATH
 
 # Remove any preconfigured monitors
 if [[ -f "${HOME}/.config/monitors.xml" ]]; then
