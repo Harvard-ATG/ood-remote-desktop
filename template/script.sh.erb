@@ -26,11 +26,41 @@ container_image=/shared/apptainerImages/<%= context.desktop %>.sif
 # Bind folders to the container file system so it can access and write to them
 SING_BIND_LIST=(
   "-B" "/shared"
+  "-B" "/tmp/.X11-unix:/tmp/.X11-unix"
 )
 SING_BINDS="${SING_BIND_LIST[@]}"
 log "SING_BINDS=${SING_BINDS}"
 
+export APPTAINER_HOME=$HOME
+echo "APPTAINER_HOME=$APPTAINER_HOME"
+
+export APPTAINER_XDG_RUNTIME_DIR="$HOME/.cache/dconf"
+echo "APPTAINER_XDG_RUNTIME_DIR=$APPTAINER_XDG_RUNTIME_DIR"
+
 unset DBUS_SESSION_BUS_ADDRESS
+
+# In your script BEFORE launching Apptainer
+export DISPLAY=:2
+export XAUTHORITY="${HOME}/.Xauthority"
+
+# Generate .Xauthority if it doesn't exist
+if [ ! -f "${XAUTHORITY}" ]; then
+    touch "${XAUTHORITY}"
+    xauth generate "${DISPLAY}" . trusted 2>/dev/null || \
+    xauth add "${DISPLAY}" . $(mcookie)
+fi
+
+# Make sure it's readable
+chmod 600 "${XAUTHORITY}"
+
+# Simple solution: disable X auth for VNC
+xhost +local: 2>/dev/null
+
+echo "X server is now accessible"
+
+echo "Verifying socket exists:"
+ls -la /tmp/.X11-unix/X2
+echo "That was the socket verification"
 
 log "Launching desktop <%= context.desktop %>"
 
