@@ -39,28 +39,12 @@ echo "APPTAINER_XDG_RUNTIME_DIR=$APPTAINER_XDG_RUNTIME_DIR"
 
 unset DBUS_SESSION_BUS_ADDRESS
 
-# In your script BEFORE launching Apptainer
-export DISPLAY=:2
-export XAUTHORITY="${HOME}/.Xauthority"
-
-# Generate .Xauthority if it doesn't exist
-if [ ! -f "${XAUTHORITY}" ]; then
-    touch "${XAUTHORITY}"
-    xauth generate "${DISPLAY}" . trusted 2>/dev/null || \
-    xauth add "${DISPLAY}" . $(mcookie)
-fi
-
-# Make sure it's readable
-chmod 600 "${XAUTHORITY}"
-
 # Simple solution: disable X auth for VNC
 xhost +local: 2>/dev/null
 
-echo "X server is now accessible"
-
-echo "Verifying socket exists:"
-ls -la /tmp/.X11-unix/X2
-echo "That was the socket verification"
+log "X server setup for DISPLAY=${DISPLAY}"
+log "Socket verification:"
+ls -la /tmp/.X11-unix/X${DISPLAY#:} 2>&1 | log
 
 log "Launching desktop <%= context.desktop %>"
 

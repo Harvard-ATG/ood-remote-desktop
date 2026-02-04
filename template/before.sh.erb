@@ -12,6 +12,12 @@ log "user=$(id -nu)"
 export HOME="/shared/home/$(id -nu)"
 log "new HOME=$HOME"
 
+# Clean up .Xauthority from wrong location
+if [ -f "/home/$(id -nu)/.Xauthority" ] && [ "$HOME" != "/home/$(id -nu)" ]; then
+    cp "/home/$(id -nu)/.Xauthority" "$HOME/.Xauthority" 2>/dev/null || true
+    log "moved .Xauthority file"
+fi
+
 export SING_OVERLAYS=""
 
 ## create custom desktop folder

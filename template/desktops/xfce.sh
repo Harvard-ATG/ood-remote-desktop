@@ -8,17 +8,19 @@ log() {
 
 export XDG_RUNTIME_DIR="${HOME}/.cache/dconf"
 
-# log "BEGIN ENV VARS IN CONTAINER"
-# printenv
-# log "END ENV VARS IN CONTAINER"
+# Fix XDG_DATA_DIRS to include standard paths
+# Spack sets this to only its own path, breaking icon lookup
+export XDG_DATA_DIRS="/usr/local/share:/usr/share:${XDG_DATA_DIRS}"
+log "Fixed XDG_DATA_DIRS=${XDG_DATA_DIRS}"
 
 set -e
 
 # Extract the real cookie from the VNC X server
-MCOOKIE=$(xauth -f ${HOME}/.Xauthority list | grep "^$(hostname)/unix:2" | awk '{print $3}')
+DISPLAY_NUM="${DISPLAY#:}"
+MCOOKIE=$(xauth -f ${HOME}/.Xauthority list | grep "^$(hostname)/unix:${DISPLAY_NUM}" | awk '{print $3}')
 if [ -z "$MCOOKIE" ]; then
     # VNC might use a different hostname format
-    MCOOKIE=$(xauth -f ${HOME}/.Xauthority list | grep ":2" | head -1 | awk '{print $3}')
+    MCOOKIE=$(xauth -f ${HOME}/.Xauthority list | grep ":${DISPLAY_NUM}" | head -1 | awk '{print $3}')
 fi
 
 # If still no cookie, get it directly from the X server
@@ -37,31 +39,6 @@ else
     log "WARNING: No cookie found, disabling X auth"
     unset XAUTHORITY
 fi
-
-# Preserve DISPLAY variable
-export DISPLAY="${DISPLAY:-:2}"
-echo "DISPLAY is set to: $DISPLAY"
-
-echo "=== INSIDE CONTAINER DEBUG ==="
-echo "1. Checking /tmp/.X11-unix directory:"
-ls -la /tmp/.X11-unix/ 2>&1 || echo "ERROR: /tmp/.X11-unix not accessible"
-
-echo "2. Checking X2 socket specifically:"
-ls -la /tmp/.X11-unix/X2 2>&1 || echo "ERROR: X2 socket not found"
-
-echo "3. Checking socket permissions:"
-stat /tmp/.X11-unix/X2 2>&1 || echo "ERROR: Cannot stat socket"
-
-echo "4. Testing with xdpyinfo:"
-xdpyinfo -display "${DISPLAY}" 2>&1 | head -20 || echo "ERROR: xdpyinfo failed"
-
-echo "5. Checking if xdpyinfo exists:"
-which xdpyinfo
-
-echo "6. Checking X11 client libraries:"
-ldconfig -p | grep X11
-
-echo "==========================="
 
 # Verify X access works
 if ! xdpyinfo -display "${DISPLAY}" >/dev/null 2>&1; then
