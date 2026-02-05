@@ -6,6 +6,49 @@ log() {
     echo -e "[$(date -Iseconds)][${this_script}] $1"
 }
 
+export XDG_RUNTIME_DIR="${HOME}/.cache/dconf"
+
+# Fix XDG_DATA_DIRS to include standard paths
+# Spack sets this to only its own path, breaking icon lookup
+export XDG_DATA_DIRS="/usr/local/share:/usr/share:${XDG_DATA_DIRS}"
+log "Fixed XDG_DATA_DIRS=${XDG_DATA_DIRS}"
+
+set -e
+
+# Extract the real cookie from the VNC X server
+DISPLAY_NUM="${DISPLAY#:}"
+MCOOKIE=$(xauth -f ${HOME}/.Xauthority list | grep "^$(hostname)/unix:${DISPLAY_NUM}" | awk '{print $3}')
+if [ -z "$MCOOKIE" ]; then
+    # VNC might use a different hostname format
+    MCOOKIE=$(xauth -f ${HOME}/.Xauthority list | grep ":${DISPLAY_NUM}" | head -1 | awk '{print $3}')
+fi
+
+# If still no cookie, get it directly from the X server
+if [ -z "$MCOOKIE" ]; then
+    xauth extract - $DISPLAY | xauth merge -
+fi
+
+log "MCOOKIE is ${MCOOKIE}"
+
+if [ -n "$MCOOKIE" ]; then
+    # Add the cookie to container's xauth
+    xauth add ${DISPLAY} . ${MCOOKIE}
+    xauth add $(hostname)${DISPLAY} . ${MCOOKIE}
+    xauth add $(hostname)/unix${DISPLAY} . ${MCOOKIE}
+else
+    log "WARNING: No cookie found, disabling X auth"
+    unset XAUTHORITY
+fi
+
+# Verify X access works
+if ! xdpyinfo -display "${DISPLAY}" >/dev/null 2>&1; then
+    echo "ERROR: Cannot access X server ${DISPLAY}"
+    exit 1
+fi
+
+# Start dbus daemon
+export $(dbus-launch)
+
 # Remove any preconfigured monitors
 if [[ -f "${HOME}/.config/monitors.xml" ]]; then
   mv "${HOME}/.config/monitors.xml" "${HOME}/.config/monitors.xml.bak"

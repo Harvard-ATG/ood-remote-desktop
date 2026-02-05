@@ -6,7 +6,7 @@ adminGroups = [
 # Specify course groups by Canvas course ID, which you can find in a url:
 # canvas.harvard.edu/courses/000000
 enabledGroups = [
-  "135510"
+  "162192"
 ]
 
 def arrays_have_common_element(array1, array2)
@@ -34,7 +34,7 @@ else
 end
 -%>
 ---
-title: Remote Desktop - Generic
+title: Remote Desktop - Matlab/ROS/Gazebo
 cluster: "<%= cluster %>"
 
 # Form attributes that will be presented to the user and available to the 
@@ -54,18 +54,12 @@ form:
 attributes:
   # This determines which container and launch script will be used, e.g the app
   # will use container xfce.sif and launch script xfce.sh
-  desktop: "xfce"
+  desktop: "rosgazebo"
 
   # How many CPU cores to include in the slurm job submission
-  custom_num_cores:
-    widget: "number_field"
-    label: "Number of CPUs"
-    value: 1
-    min: 1
-    max: 4
-    step: 1
+  custom_num_cores: 4
 
-  # the idle timeout setting for the vncserver. 
+  # the idle timeout setting for the vncserver.
   bc_vnc_idle: 0
 
   bc_vnc_resolution:

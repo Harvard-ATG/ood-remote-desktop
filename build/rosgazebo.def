@@ -1,0 +1,140 @@
+Bootstrap: docker
+From: ubuntu:20.04
+
+%files
+/shared/MATLAB /opt/MATLAB_INSTALL
+
+%post
+ROS_DISTRO="noetic"
+# Install packages needed for baseline desktop and ros installation
+echo "$(date -Iminutes) START - apt package install" && \
+apt-get update -y && \
+DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl \
+    lsb-release \
+    gnupg \
+    xfce4 \
+    xfce4-goodies \
+    xfce4-terminal \
+    vim \
+    git \
+    xdg-utils \
+    apt-utils \
+    python3.9 \
+    python3.9-venv \
+    python3.9-dev \
+    language-pack-en-base && \
+rm -rf /var/lib/apt/lists/* && \
+echo "$(date -Iminutes) END - apt package install"
+
+# Install Matlab
+echo "$(date -Iminutes) START - MATLAB install" && \
+cd /opt/MATLAB_INSTALL
+./install -inputFile /opt/MATLAB_INSTALL/installer_input.txt
+cat /tmp/mathworks_container.log
+mkdir -p /opt/MATLAB/R2024a/licenses
+cp /opt/MATLAB_INSTALL/network.lic /opt/MATLAB/R2024a/licenses/network.lic
+cd
+rm -rf /opt/MATLAB_INSTALL
+echo "$(date -Iminutes) END - MATLAB install"
+
+dpkg-reconfigure locales
+
+# Install ROS software
+# See http://wiki.ros.org/noetic/Installation/Ubuntu for overview of install process
+echo "$(date -Iminutes) START - ROS software install"
+# Configure apt repository for ROS
+echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list
+curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+
+# Install ROS
+
+apt-get update -y && \
+DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    ros-${ROS_DISTRO}-desktop-full \
+    ros-${ROS_DISTRO}-roslaunch \
+    ros-${ROS_DISTRO}-ur-gazebo \
+    ros-${ROS_DISTRO}-ur5-moveit-config \
+    ros-${ROS_DISTRO}-ros-control \
+    ros-${ROS_DISTRO}-ros-controllers && \
+rm -rf /var/lib/apt/lists/*
+echo "$(date -Iminutes) END - ROS software install"
+
+export LD_LIBRARY_PATH=/opt/ros/${ROS_DISTRO}/lib
+export ROS_ETC_DIR=/opt/ros/${ROS_DISTRO}/etc/ros
+export CMAKE_PREFIX_PATH=/opt/ros/${ROS_DISTRO}
+export ROS_ROOT=/opt/ros/${ROS_DISTRO}/share/ros
+export ROS_VERSION=1
+export ROS_PYTHON_VERSION=3
+export PYTHONPATH=/opt/ros/${ROS_DISTRO}/lib/python3/dist-packages
+export ROS_PACKAGE_PATH=/opt/ros/${ROS_DISTRO}/share
+export ROSLISP_PACKAGE_DIRECTORIES=
+export PATH=/opt/ros/${ROS_DISTRO}/bin:$PATH
+export PKG_CONFIG_PATH=/opt/ros/${ROS_DISTRO}/lib/pkgconfig
+export ROS_DISTRO=${ROS_DISTRO}
+export ROS_MASTER_URI=http://localhost:11311
+
+# Install dependencies for building packages
+echo "$(date -Iminutes) START - install dependencies for building ROS packages" && \
+apt-get update -y && \
+DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    python3-rosdep \
+    python3-rosinstall \
+    python3-rosinstall-generator \
+    python3-wstool \
+    build-essential && \
+rm -rf /var/lib/apt/lists/* && \
+echo "$(date -Iminutes) END - install dependencies for building ROS packages"
+
+# Initialize rosdep
+echo "$(date -Iminutes) START - initialize rosdep"
+rosdep init && rosdep update
+echo "$(date -Iminutes) END - initialize rosdep"
+
+# Install Universal Robots from GitHub
+echo "$(date -Iminutes) START - Install Universal Robots"
+mkdir -p /opt/catkin_ws/src && \
+    cd /opt/catkin_ws/src && \
+    git clone --branch ${ROS_DISTRO}-devel https://github.com/ros-industrial/universal_robot.git
+cd /opt/catkin_ws && rosdep update && \
+    apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive rosdep install --rosdistro ${ROS_DISTRO} --ignore-src --from-paths src --default-yes  && \
+    catkin_make && \
+    rm -rf /var/lib/apt/lists/*
+echo "$(date -Iminutes) END - Install Universal Robots"
+
+# Install VirtualGL (https://github.com/VirtualGL/virtualgl)
+echo "$(date -Iminutes) START - Install VirtualGL"
+cd
+curl -LO https://github.com/VirtualGL/virtualgl/releases/download/3.1.1/virtualgl_3.1.1_amd64.deb
+dpkg -i ~/virtualgl_3.1.1_amd64.deb && rm -f ~/virtualgl_3.1.1_amd64.deb
+echo "$(date -Iminutes) END - Install VirtualGL"
+
+# Install VS Codium
+echo "$(date -Iminutes) START - Install VS Codium"
+curl -LO https://github.com/VSCodium/vscodium/releases/download/1.91.1.24193/codium_1.91.1.24193_amd64.deb
+dpkg -i ~/codium_1.91.1.24193_amd64.deb && rm -f ~/codium_1.91.1.24193_amd64.deb
+echo "$(date -Iminutes) END - Install VS Codium"
+
+# Install Firefox
+echo "$(date -Iminutes) START - Install Firefox"
+apt-get update -y && \
+DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    firefox && \
+rm -rf /var/lib/apt/lists/*
+echo "$(date -Iminutes) END - Install Firefox"
+
+%environment
+export ROS_DISTRO=noetic
+export LD_LIBRARY_PATH=/opt/ros/${ROS_DISTRO}/lib
+export ROS_ETC_DIR=/opt/ros/${ROS_DISTRO}/etc/ros
+export CMAKE_PREFIX_PATH=/opt/ros/${ROS_DISTRO}
+export ROS_ROOT=/opt/ros/${ROS_DISTRO}/share/ros
+export ROS_VERSION=1
+export ROS_PYTHON_VERSION=3
+export PYTHONPATH=/opt/ros/${ROS_DISTRO}/lib/python3/dist-packages
+export ROS_PACKAGE_PATH=/opt/ros/${ROS_DISTRO}/share
+export ROSLISP_PACKAGE_DIRECTORIES=
+export PATH=/opt/ros/${ROS_DISTRO}/bin:$PATH
+export PKG_CONFIG_PATH=/opt/ros/${ROS_DISTRO}/lib/pkgconfig
+export ROS_MASTER_URI=http://localhost:11311

@@ -26,11 +26,25 @@ container_image=/shared/apptainerImages/<%= context.desktop %>.sif
 # Bind folders to the container file system so it can access and write to them
 SING_BIND_LIST=(
   "-B" "/shared"
+  "-B" "/tmp/.X11-unix:/tmp/.X11-unix"
 )
 SING_BINDS="${SING_BIND_LIST[@]}"
 log "SING_BINDS=${SING_BINDS}"
 
+export APPTAINER_HOME=$HOME
+echo "APPTAINER_HOME=$APPTAINER_HOME"
+
+export APPTAINER_XDG_RUNTIME_DIR="$HOME/.cache/dconf"
+echo "APPTAINER_XDG_RUNTIME_DIR=$APPTAINER_XDG_RUNTIME_DIR"
+
 unset DBUS_SESSION_BUS_ADDRESS
+
+# Simple solution: disable X auth for VNC
+xhost +local: 2>/dev/null
+
+log "X server setup for DISPLAY=${DISPLAY}"
+log "Socket verification:"
+ls -la /tmp/.X11-unix/X${DISPLAY#:} 2>&1 | log
 
 log "Launching desktop <%= context.desktop %>"
 

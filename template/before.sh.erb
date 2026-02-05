@@ -12,6 +12,12 @@ log "user=$(id -nu)"
 export HOME="/shared/home/$(id -nu)"
 log "new HOME=$HOME"
 
+# Clean up .Xauthority from wrong location
+if [ -f "/home/$(id -nu)/.Xauthority" ] && [ "$HOME" != "/home/$(id -nu)" ]; then
+    cp "/home/$(id -nu)/.Xauthority" "$HOME/.Xauthority" 2>/dev/null || true
+    log "moved .Xauthority file"
+fi
+
 export SING_OVERLAYS=""
 
 ## create custom desktop folder
@@ -38,3 +44,54 @@ XDG_TEMPLATES_DIR="$HOME/Templates"
 XDG_VIDEOS_DIR="$HOME/Videos"
 EOF
 log "Set up user dirs folder"
+
+IMAGE_FILE=<%= context.desktop %>
+if [[ "${IMAGE_FILE}" == "rosgazebo" ]]; then
+    log "This is rosgazebo, setting up desktop icons"
+
+    # Create a desktop icon for Gazebo
+    cat > $DESKTOP_FOLDER/Gazebo.desktop <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Gazebo 11
+Comment=3-D Robot simulator
+Exec=/usr/bin/gazebo
+Icon=gazebo
+Path=
+Terminal=false
+StartupNotify=true
+EOF
+    chmod +x $DESKTOP_FOLDER/Gazebo.desktop
+
+    # Create a desktop icon for VS Codium
+    cat > $DESKTOP_FOLDER/VSCodium.desktop <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=VSCodium
+Comment=Code editor
+Exec=/usr/share/codium/codium %F
+Icon=vscodium
+Path=
+Terminal=false
+StartupNotify=false
+EOF
+    chmod +x $DESKTOP_FOLDER/VSCodium.desktop
+
+    # Create a desktop icon for MATLAB
+    cat > $DESKTOP_FOLDER/MATLAB.desktop <<EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=MATLAB
+Comment=MATLAB
+Exec=/opt/MATLAB/R2024a/bin/matlab -desktop -softwareopengl &
+Icon=<%= session.staged_root.join("assets", "matlab.png") %>
+Terminal=false
+StartupNotify=false
+EOF
+    chmod +x $DESKTOP_FOLDER/MATLAB.desktop
+else
+    log "There are no desktop icons to set up for ${IMAGE_FILE}."
+fi
