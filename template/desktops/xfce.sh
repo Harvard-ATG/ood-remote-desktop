@@ -1,6 +1,6 @@
 #!/bin/bash
 
-this_script="template/desktops/rosgazebo.sh"
+this_script="template/desktops/xfce.sh"
 
 log() {
     echo -e "[$(date -Iseconds)][${this_script}] $1"
