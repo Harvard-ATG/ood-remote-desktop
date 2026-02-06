@@ -13,3 +13,8 @@ The spack environment is articulated in `spack-environment/apptainer/spack.yml`.
 ## Apptainer container
 
 The definition for the apptainer container is at `build/xfce.def`. It can be invoked after the apptainer module is loaded with `apptainer build /shared/apptainerImages/xfce.sif ./build/xfce.def` from the root of this repo. This is a native apptainer image build based on an Ubuntu docker image.
+
+
+### Notes
+
+Should you get this warning while doing the apptainer build `failed to write (No space left on device)`, you can run the build via this command ex: `apptainer build --tmpdir /scratch/apptainerImages ovito.sif ovito.def`. The space availiablity  in the tmp directory that Apptainer is using is full so we will need to explicitly tell apptainer to use another directory.
