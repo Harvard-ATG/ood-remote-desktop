@@ -19,7 +19,15 @@ DEBIAN_FRONTEND=noninteractive apt install -y \
     locales \
     xfce4-terminal \
     vim \
-    language-pack-en-base
+    language-pack-en-base \
+    hicolor-icon-theme \
+    adwaita-icon-theme \
+    shared-mime-info \
+    gsettings-desktop-schemas \
+    dconf-gsettings-backend dconf-service \
+    gvfs \
+    gtk-update-icon-cache
+
 
 # dpkg-reconfigure locales
 
