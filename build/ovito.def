@@ -2,7 +2,8 @@ Bootstrap: docker
 From: ubuntu:24.04
 
 %post
-set -x
+set -ex
+
 apt update -y && \
 DEBIAN_FRONTEND=noninteractive apt install -y \
     xfce4 \
@@ -24,10 +25,10 @@ DEBIAN_FRONTEND=noninteractive apt install -y \
     adwaita-icon-theme \
     shared-mime-info \
     gsettings-desktop-schemas \
-    dconf-gsettings-backend dconf-service \
+    dconf-gsettings-backend \
+    dconf-service \
     gvfs \
     gtk-update-icon-cache
-
 
 # dpkg-reconfigure locales
 
@@ -40,6 +41,7 @@ OVITO_FILE="ovito-basic-3.13.1-x86_64"
 curl -o /tmp/${OVITO_FILE}.tar.xz  https://www.ovito.org/download/master/${OVITO_FILE}.tar.xz
 tar -xf /tmp/${OVITO_FILE}.tar.xz --directory /tmp
 mv /tmp/${OVITO_FILE} /opt
+rm /tmp/${OVITO_FILE}.tar.xz
 
 # Install packages recommended by Ovito when encountering "Missing XCB system
 # libraries" error - https://docs.ovito.org/installation.html
@@ -66,3 +68,6 @@ DEBIAN_FRONTEND=noninteractive apt install -y \
     libopengl0 \
     libglx0 \
     libx11-6
+
+apt-get clean
+rm -rf /var/lib/apt/lists/*

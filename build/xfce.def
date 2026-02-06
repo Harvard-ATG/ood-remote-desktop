@@ -2,7 +2,9 @@ Bootstrap: docker
 From: ubuntu:24.04
 
 %post
-apt update -y && \
+set -ex  # show commands and stop on first error
+
+apt update -y
 DEBIAN_FRONTEND=noninteractive apt install -y \
     xfce4 \
     dbus-x11 \
@@ -23,7 +25,14 @@ DEBIAN_FRONTEND=noninteractive apt install -y \
     adwaita-icon-theme \
     shared-mime-info \
     gsettings-desktop-schemas \
-    dconf-gsettings-backend dconf-service \
+    dconf-gsettings-backend \
+    dconf-service \
     gvfs \
     gtk-update-icon-cache
-dpkg-reconfigure locales
+
+# Optional: configure locales non-interactively
+# locale-gen en_US.UTF-8
+# update-locale LANG=en_US.UTF-8
+
+apt-get clean
+rm -rf /var/lib/apt/lists/*
