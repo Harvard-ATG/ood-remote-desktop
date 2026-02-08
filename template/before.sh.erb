@@ -14,6 +14,11 @@ log "new HOME=$HOME"
 
 export SING_OVERLAYS=""
 
+# Ensure XDG_RUNTIME_DIR / dconf cache exists for this HOME
+mkdir -p "$HOME/.cache/dconf"
+chmod 700 "$HOME/.cache" "$HOME/.cache/dconf"
+log "Set up XDG_RUNTIME_DIR at $HOME/.cache/dconf"
+
 ## create custom desktop folder
 export DESKTOP_FOLDER="${PWD}/desktop"
 export XDG_DESKTOP_DIR=$DESKTOP_FOLDER

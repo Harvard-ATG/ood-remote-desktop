@@ -1,12 +1,15 @@
 Bootstrap: docker
-From: ubuntu:24.04
+From: ubuntu:20.04
 
 %post
 set -ex
+export DEBIAN_FRONTEND=noninteractive
 
-apt update -y && \
-DEBIAN_FRONTEND=noninteractive apt install -y \
+apt-get update -y
+apt-get install -y \
     xfce4 \
+    xfce4-goodies \
+    xfce4-terminal \
     dbus-x11 \
     xdg-utils \
     x11-utils \
@@ -16,36 +19,34 @@ DEBIAN_FRONTEND=noninteractive apt install -y \
     libgl1-mesa-dev \
     libglew-dev \
     libosmesa6-dev \
-    libxcb-cursor-dev \
+    libxcb-cursor0 \
     locales \
-    xfce4-terminal \
-    vim \
     language-pack-en-base \
+    vim \
+    git \
+    # icon themes & mime DB & schemas
     hicolor-icon-theme \
     adwaita-icon-theme \
     shared-mime-info \
     gsettings-desktop-schemas \
-    dconf-gsettings-backend \
-    dconf-service \
+    # pixbuf loaders / SVG
+    libgdk-pixbuf-2.0-0 \
+    libgdk-pixbuf2.0-common \
+    libgdk-pixbuf2.0-bin \
+    librsvg2-common \
+    # gvfs, user dirs
     gvfs \
-    gtk-update-icon-cache
+    xdg-user-dirs
 
-# dpkg-reconfigure locales
-
-# /* ------------------------------------------------------------------------ */
-# /*                           OVITO SOFTWARE SETUP                           */
-# /* ------------------------------------------------------------------------ */
-
+# OVITO
 OVITO_FILE="ovito-basic-3.13.1-x86_64"
-
-curl -o /tmp/${OVITO_FILE}.tar.xz  https://www.ovito.org/download/master/${OVITO_FILE}.tar.xz
+curl -o /tmp/${OVITO_FILE}.tar.xz https://www.ovito.org/download/master/${OVITO_FILE}.tar.xz
 tar -xf /tmp/${OVITO_FILE}.tar.xz --directory /tmp
 mv /tmp/${OVITO_FILE} /opt
-rm /tmp/${OVITO_FILE}.tar.xz
+rm -f /tmp/${OVITO_FILE}.tar.xz
 
-# Install packages recommended by Ovito when encountering "Missing XCB system
-# libraries" error - https://docs.ovito.org/installation.html
-DEBIAN_FRONTEND=noninteractive apt install -y \
+# OVITO XCB / GL deps
+apt-get install -y \
     libxcb1 \
     libx11-xcb1 \
     libxcb-glx0 \
