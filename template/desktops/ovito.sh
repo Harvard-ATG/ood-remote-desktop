@@ -15,6 +15,7 @@ export PATH=/opt/ovito-basic-3.13.1-x86_64/bin:$PATH
 # out and xfdesktop never paints -- a black VNC screen (session 196c7762, 2026-09-28).
 export XDG_RUNTIME_DIR="${HOME}/.cache/dconf"
 mkdir -p "${XDG_RUNTIME_DIR}"     # dbus-launch below needs it to exist
+chmod 700 "${XDG_RUNTIME_DIR}"    # and refuses it if group/other-writable ("can be written by others (mode 040775)")
 
 # Fix XDG_DATA_DIRS to include standard paths
 # Spack sets this to only its own path, breaking icon lookup
@@ -57,7 +58,6 @@ fi
 # Start dbus daemon
 export $(dbus-launch)
 
-# Remove any preconfigured monitors
 # Remove any preconfigured monitors
 if [[ -f "${HOME}/.config/monitors.xml" ]]; then
   mv "${HOME}/.config/monitors.xml" "${HOME}/.config/monitors.xml.bak"
