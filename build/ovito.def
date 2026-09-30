@@ -37,7 +37,12 @@ apt-get install -y \
 
 # OVITO
 OVITO_FILE="ovito-basic-3.13.1-x86_64"
-curl -o /tmp/${OVITO_FILE}.tar.xz https://www.ovito.org/download/master/${OVITO_FILE}.tar.xz
+# sha256 of the archive that ovito.sif was built from, verified 2026-09-30: all 1,135 files under
+# /opt/${OVITO_FILE} in the image match this download (168,772,396 bytes, server Last-Modified 2025-08-07).
+# The download URL is not versioned by this repo, so the build stops if the bytes ever change.
+OVITO_SHA256="6c448092e907194803f6e7117e659648819cf0b294f39a8af6177ad21d43ebff"
+curl -fL -o /tmp/${OVITO_FILE}.tar.xz https://www.ovito.org/download/master/${OVITO_FILE}.tar.xz
+echo "${OVITO_SHA256}  /tmp/${OVITO_FILE}.tar.xz" | sha256sum -c -
 tar -xf /tmp/${OVITO_FILE}.tar.xz --directory /tmp
 mv /tmp/${OVITO_FILE} /opt
 rm -f /tmp/${OVITO_FILE}.tar.xz
