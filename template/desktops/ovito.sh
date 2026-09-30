@@ -37,7 +37,7 @@ if [ -z "$MCOOKIE" ]; then
     xauth extract - $DISPLAY | xauth merge -
 fi
 
-log "MCOOKIE is ${MCOOKIE}"
+log "X authentication cookie lookup complete"
 
 if [ -n "$MCOOKIE" ]; then
     # Add the cookie to container's xauth
