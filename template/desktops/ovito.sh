@@ -8,6 +8,56 @@ log() {
 
 export PATH=/opt/ovito-basic-3.13.1-x86_64/bin:$PATH
 
+# ---- ported from xfce.sh on 2026-09-28 (Check 13) -------------------------------
+# Without these, the container inherits the host's stale XDG_RUNTIME_DIR (built from the
+# cluster-local /home/<user> before the app corrected HOME) and Spack's XDG_DATA_DIRS;
+# dbus then cannot start, ICE auth fails, icon/pixbuf lookup fails, xfce4-panel bails
+# out and xfdesktop never paints -- a black VNC screen (session 196c7762, 2026-09-28).
+export XDG_RUNTIME_DIR="${HOME}/.cache/dconf"
+mkdir -p "${XDG_RUNTIME_DIR}"     # dbus-launch below needs it to exist
+chmod 700 "${XDG_RUNTIME_DIR}"    # and refuses it if group/other-writable ("can be written by others (mode 040775)")
+
+# Fix XDG_DATA_DIRS to include standard paths
+# Spack sets this to only its own path, breaking icon lookup
+export XDG_DATA_DIRS="/usr/local/share:/usr/share:${XDG_DATA_DIRS}"
+log "Fixed XDG_DATA_DIRS=${XDG_DATA_DIRS}"
+
+set -e
+
+# Extract the real cookie from the VNC X server
+DISPLAY_NUM="${DISPLAY#:}"
+MCOOKIE=$(xauth -f ${HOME}/.Xauthority list | grep "^$(hostname)/unix:${DISPLAY_NUM}" | awk '{print $3}')
+if [ -z "$MCOOKIE" ]; then
+    # VNC might use a different hostname format
+    MCOOKIE=$(xauth -f ${HOME}/.Xauthority list | grep ":${DISPLAY_NUM}" | head -1 | awk '{print $3}')
+fi
+
+# If still no cookie, get it directly from the X server
+if [ -z "$MCOOKIE" ]; then
+    xauth extract - $DISPLAY | xauth merge -
+fi
+
+log "X authentication cookie lookup complete"
+
+if [ -n "$MCOOKIE" ]; then
+    # Add the cookie to container's xauth
+    xauth add ${DISPLAY} . ${MCOOKIE}
+    xauth add $(hostname)${DISPLAY} . ${MCOOKIE}
+    xauth add $(hostname)/unix${DISPLAY} . ${MCOOKIE}
+else
+    log "WARNING: No cookie found, disabling X auth"
+    unset XAUTHORITY
+fi
+
+# Verify X access works
+if ! xdpyinfo -display "${DISPLAY}" >/dev/null 2>&1; then
+    echo "ERROR: Cannot access X server ${DISPLAY}"
+    exit 1
+fi
+
+# Start dbus daemon
+export $(dbus-launch)
+
 # Remove any preconfigured monitors
 if [[ -f "${HOME}/.config/monitors.xml" ]]; then
   mv "${HOME}/.config/monitors.xml" "${HOME}/.config/monitors.xml.bak"
